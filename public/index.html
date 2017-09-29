@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>welcome to the chat application</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+
+  <style>
+    #chat-window{
+      height: 400px;
+      width: 500px;
+      background: rgba(150,100,150,0.2);
+    }
+    #mario-chat{
+      height: 400px;
+      width: 500px;
+    }
+    #chat-window{
+      border:1px solid rgb(78, 22, 163);
+      padding-left: 5px;
+    }
+    button{
+      padding: 3px;
+      width: 101.5%;
+      line-height: 30px;
+      background: rgb(124, 56, 226);
+      outline: none;
+      border: 5px solid rgba(0,0,0,0);
+      color: white;
+      font-size: 20px;
+    }
+    input{
+      padding: 3px;
+      line-height: 30px;
+      background: rgba(150,100,150,0.1);
+      outline: none;
+      border: 1.1px solid rgba(0,0,0,0);
+      /*border:3px solid black;*/
+      width: 100%;
+    }
+    #message{
+      display: none;
+    }
+    #send{
+      display: none;
+    }
+    #online-users{
+      display: none;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="mario-chat">
+    <div id="chat-window">
+      <div id="output"></div>
+      <div id="feedback"></div>
+    </div>
+    <div id="online-users"></div>
+    <div id="input">
+      <input type="text" id="handle" placeholder="handle">
+      <button id="check">Check</button>
+      <div id="error"></div>
+      <input type="text" id="message" placeholder="message">
+      <button id="send">Send</button>
+    </div>
+  </div>
+  <script>
+    var socket=io.connect("http://localhost:4000");
+    var message=document.getElementById("message");
+    var handle=document.getElementById("handle");
+    var btn=document.getElementById("send");
+    var check=document.getElementById("check");
+    var err=document.getElementById("error");
+    var output=document.getElementById("output");
+    var feedback=document.getElementById("feedback");
+    var online=document.getElementById("online-users");
+
+
+    btn.addEventListener("click",function(){
+      socket.emit("chat",{
+        message:message.value,
+        handle:handle.value
+
+      });
+    });
+
+    message.addEventListener("keypress",function(){
+      socket.emit("typing",handle.value);
+    });
+    check.addEventListener("click",function(){
+      socket.emit("check user",handle.value,function(data){
+        if(data){
+          err.innerHTML='';
+          online.style.display="block";
+          message.style.display="block";
+          send.style.display="block";
+          handle.style.display="none";
+          check.style.display="none";
+        }else{
+          err.innerHTML="this username is already taken";
+        }
+      });
+    });
+
+    socket.on("chat",function(data){
+      feedback.innerHTML="";
+      message.value="";
+      output.innerHTML+="<p><strong>"+data.handle+" :</strong> "+data.message+"</p>";
+    });
+    socket.on("typing",function(data){
+      feedback.innerHTML="<p><em>"+data+" is typing a message....</em></p>";
+    });
+    socket.on("check user",function(data){
+      var str='';
+      console.log(data);
+      for(i=0;i<data.length;i++){
+        str+=data[i]+"<br/>";
+      }
+      online.innerHTML=str;
+    })
+  </script>
+
+</body>
+</html>
