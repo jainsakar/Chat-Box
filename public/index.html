@@ -5,26 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>welcome to the chat application</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
 
   <style>
+    /*body{
+      padding: 5px;
+    }*/
     #chat-window{
+      overflow: auto;
       height: 400px;
-      width: 500px;
+      /*width: 500px;*/
       background: rgba(150,100,150,0.2);
     }
-    #mario-chat{
+    /*#mario-chat{
       height: 400px;
       width: 500px;
-    }
+    }*/
     #chat-window{
       border:1px solid rgb(78, 22, 163);
       padding-left: 5px;
     }
     button{
       padding: 3px;
-      width: 101.5%;
+      width: 100%;
       line-height: 30px;
       background: rgb(124, 56, 226);
       outline: none;
@@ -48,26 +54,75 @@
       display: none;
     }
     #online-users{
+      height: 400px;
+      background: rgba(150,100,150,0.2);
+
       display: none;
     }
-
+    #online-container{
+      background:#5cb85c;
+      border-radius:15px;
+      font-size:24px;
+      color:white;
+      overflow:auto;
+      font-weight: 500;
+    }
+    /*#testing{
+      height: 400px;
+      background: rgba(0,0,0,0.2);
+    }*/
   </style>
 </head>
 <body>
-  <div id="mario-chat">
-    <div id="chat-window">
-      <div id="output"></div>
-      <div id="feedback"></div>
-    </div>
-    <div id="online-users"></div>
-    <div id="input">
-      <input type="text" id="handle" placeholder="handle">
-      <button id="check">Check</button>
-      <div id="error"></div>
-      <input type="text" id="message" placeholder="message">
-      <button id="send">Send</button>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-3" >
+        <div id="user-profile">
+          <h4>User Profile</h4>
+          <div id="user-detail">
+
+          </div>
+        </div>
+
+      </div>
+      <div class="col-lg-4" >
+        <div id="mario-chat">
+          <div id="chat-window">
+            <div id="output"></div>
+            <div id="feedback"></div>
+          </div>
+          <div id="input">
+            <input type="text" id="handle" placeholder="handle">
+            <button id="check">Check</button>
+            <div id="error"></div>
+            <input type="text" id="message" placeholder="message">
+            <button id="send">Send</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3" >
+        <div id="online-container">
+          <center>Online</center>
+          <div id="online-users">
+            <ul id="user-list">
+
+            </ul>
+          </div>
+        </div>
+
+      </div>
+      <div class="col-lg-2" >
+        <div id="testing">
+
+        </div>
+      </div>
+
     </div>
   </div>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
   <script>
     var socket=io.connect("http://localhost:4000");
     var message=document.getElementById("message");
@@ -78,6 +133,8 @@
     var output=document.getElementById("output");
     var feedback=document.getElementById("feedback");
     var online=document.getElementById("online-users");
+    var userList=document.getElementById("user-list");
+    var detail=document.getElementById("user-detail");
 
 
     btn.addEventListener("click",function(){
@@ -91,10 +148,12 @@
     message.addEventListener("keypress",function(){
       socket.emit("typing",handle.value);
     });
+    //1st emit checking user
     check.addEventListener("click",function(){
-      socket.emit("check user",handle.value,function(data){
+      socket.emit("check user",handle.value,function(data){ //emiting check user event and sending handle.value to the server
         if(data){
           err.innerHTML='';
+          detail.style.display="block";
           online.style.display="block";
           message.style.display="block";
           send.style.display="block";
@@ -115,13 +174,55 @@
       feedback.innerHTML="<p><em>"+data+" is typing a message....</em></p>";
     });
     socket.on("check user",function(data){
-      var str='';
-      console.log(data);
-      for(i=0;i<data.length;i++){
-        str+=data[i]+"<br/>";
+      // for(var i=0;i<data.length;i++){
+      //   var newli=document.createElement("li");
+      //   newli.innerHTML=data[i];
+      //   userList.appendChild(newli);
+      // }
+      console.log(userList.childNodes.length);
+      userList.innerHTML="";
+      // var len=userList.childNodes.length-1;
+      // var list=userList.getElementsByTagName("li");
+      // if(len+1<=data.length){
+      //   for( i=0;i<len;i++){
+      //     console.log("hello");
+      //     var remove=userList.removeChild(list[i]);
+      //   }
+      //   console.log(remove);
+      // }
+
+      for (var i = 0; i < data.length; i++) {
+        if(data[i]!=handle.value){
+          var newli=document.createElement("li");
+          newli.innerHTML=data[i];
+          userList.appendChild(newli);
+        }else{
+          detail.innerHTML="<h5>"+handle.value+"</h5>";
+        }
       }
-      online.innerHTML=str;
-    })
+      console.log(userList);
+
+
+
+    });
+    // socket.on("delete user",function(data){
+    //
+    //
+    //
+    // });
+    // socket.on("check user",function(data){
+    //   var str='';
+    //   console.log(data);
+    //   detail.innerHTML=handle.value;
+    //   for(i=0;i<data.length;i++){
+    //     if(data[i]!=handle.value){
+    //       str+="<h6><center>"+data[i]+"</center></h6><br/>";
+    //
+    //     }
+    //
+    //   }
+    //   online.innerHTML=str;
+    // });
   </script>
 
 </body>
