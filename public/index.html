@@ -139,7 +139,7 @@
     //The send button
     btn.addEventListener("click",function(){
     //only forward message if it contains atleast a single character except space 
-    message.value.trim(); //removes the starting and tailing spaces if any.
+    message.value = message.value.trim();
     if(message.value.length > 0)
     {		
       		socket.emit("chat",{
