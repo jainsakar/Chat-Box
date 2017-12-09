@@ -136,14 +136,18 @@
     var userList=document.getElementById("user-list");
     var detail=document.getElementById("user-detail");
 
-
+    //The send button
     btn.addEventListener("click",function(){
-      socket.emit("chat",{
-        message:message.value,
-        handle:handle.value
-
-      });
-    });
+    //only forward message if it contains atleast a single character except space 
+    message.value = message.value.trim();
+    if(message.value.length > 0)
+    {		
+      		socket.emit("chat",{
+        		message:message.value,
+        		handle:handle.value
+      		});//socket.emit ends here
+  	}
+    }); //addEventListener ends here
 
     message.addEventListener("keypress",function(){
       socket.emit("typing",handle.value);
